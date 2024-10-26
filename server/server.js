@@ -1,4 +1,3 @@
-
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -11,10 +10,10 @@ app.use(cors());
 const aqiApiKey = '228b29504d3434826beaab2ce4f305430446d9b1';
 const geoDbApiKey = '54f36ecef8msh5e1ba8c380116a1p1b24b0jsn69082316784b';
 
-
 // Fetch AQI and city data (population, area)
 app.get('/api/citydata', async (req, res) => {
   const city = req.query.city || 'Raipur';
+  const targetAQI = parseInt(req.query.targetAQI) || 50; // Default target AQI
 
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
@@ -29,7 +28,7 @@ app.get('/api/citydata', async (req, res) => {
       return res.status(404).json({ error: 'City not found for AQI' });
     }
 
-    const aqi = aqiData.data.aqi;
+    const curAQI = aqiData.data.aqi;
 
     // Fetch population and area data using GeoDB Cities API
     const geoDbResponse = await axios.get(
@@ -47,20 +46,24 @@ app.get('/api/citydata', async (req, res) => {
     }
 
     const cityData = geoDbResponse.data.data[0];
-    console.log(cityData.area);
-    
     const population = cityData.population || 500000; // Default if not found
-    const area = cityData.area || 150; // Default area in km²
+    const area = cityData.area ||450; // Default area in km²
 
-    // Calculate required plantation area (example formula)
-    const requiredPlantationArea = ((aqi - 50) * population) / area;
+    // Calculate the number of trees required
+    const avgCarbonAbsorption = 10; // kg/tree
+    const treesPerKm2 = 100; // trees/km²
+    const totalCarbonAbsorptionNeeded = (curAQI - targetAQI) * population * 0.001; // kg
+    const treesNeeded = Math.ceil(totalCarbonAbsorptionNeeded / avgCarbonAbsorption);
+    const requiredArea = treesNeeded / treesPerKm2; // in km²
 
     return res.json({
       city: cityData.name,
-      aqi,
+      curAQI,
+      targetAQI,
       population,
       area,
-      requiredPlantationArea: requiredPlantationArea.toFixed(2), // Rounded for readability
+      treesNeeded,
+      requiredArea: requiredArea.toFixed(2), // in km²
     });
 
   } catch (error) {

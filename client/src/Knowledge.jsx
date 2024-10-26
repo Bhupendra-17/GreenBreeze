@@ -1,11 +1,12 @@
-import React from 'react'
+import React from 'react';
+import AirPollutionMeasures from './components/Cards/AirPollutionsMeasures';
 
-function Knowledge() {
+const Knowledge = () => {
   return (
-    <div>
-        
+    <div className="bg-gray-100 min-h-screen py-10">
+      <AirPollutionMeasures />
     </div>
-  )
-}
+  );
+};
 
-export default Knowledge
+export default Knowledge;

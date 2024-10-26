@@ -1,75 +1,49 @@
 const express = require('express');
-const axios = require('axios');
 const cors = require('cors');
+const { createClient } = require('@supabase/supabase-js');
+
 const app = express();
 
 // Enable CORS for React frontend
 app.use(cors());
 
-// API key for API Ninjas (replace with your actual key)
-const apiNinjasKey = 'wA2BK5aBRbeTckHTpzdiQQ==JetrAUBbEOVmaZNt';
-
-// Fetch AQI and city data (population)
+// Initialize Supabase client
+const supabaseUrl = 'https://xeykxvvvntaikmkgirbn.supabase.co'; // Your Supabase URL
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhleWt4dnZ2bnRhaWtta2dpcmJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk3MDQwNjUsImV4cCI6MjA0NTI4MDA2NX0.YxQugZUYyxB6mu0NKXHL5BPxKRnrfFPYqfiDBPC8EhM'; // Your Supabase anon/public key
+const supabase = createClient(supabaseUrl, supabaseKey);
 app.get('/api/citydata', async (req, res) => {
-  const city = req.query.city || 'Raipur';
+  const city = req.query.city || "Raipur";
 
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
   }
 
   try {
-    // Log the city being queried
-    console.log('Fetching AQI data for city:', city);
+    const { data, error } = await supabase
+      .from('Citydata')
+      .select('Area', 'Population', 'AQI') // Include AQI
+      .eq('City', city)
+      .single(); // Remove if not working
 
-    // Get AQI data using API Ninjas
-    const aqiResponse = await axios.get(`https://api.api-ninjas.com/v1/airquality?city=${city}`, {
-      headers: {
-        'X-Api-Key': apiNinjasKey,
-      },
-    });
+    console.log('Data:', data); // Log data for debugging
+    console.log('Error:', error); // Log error for debugging
 
-    console.log('AQI Response:', aqiResponse.data);
-
-    if (!aqiResponse.data || aqiResponse.data.length === 0) {
-      return res.status(404).json({ error: 'City not found for AQI' });
+    if (error || !data) {
+      console.error('Supabase error or city not found:', error);
+      return res.status(404).json({ error: 'City not found in Supabase' });
     }
-
-    const aqiData = aqiResponse.data[0];
-    const aqi = aqiData.aqi;
-
-    // Fetch population data using API Ninjas
-    const ninjaResponse = await axios.get(`https://api.api-ninjas.com/v1/city?name=${city}`, {
-      headers: {
-        'X-Api-Key': apiNinjasKey,
-      },
-    });
-
-    console.log('City Population Response:', ninjaResponse.data);
-
-    if (!ninjaResponse.data || ninjaResponse.data.length === 0) {
-      return res.status(404).json({ error: 'City not found for population data' });
-    }
-
-    const cityData = ninjaResponse.data[0];
-    const population = cityData.population || 500000; // Default population if not found
-    const area = 150; // Default area in km²
-
-    // Calculate required plantation area (example formula)
-    const requiredPlantationArea = ((aqi - 50) * population) / area;
 
     return res.json({
-      city: cityData.name,
-      aqi,
-      population,
-      area,
-      requiredPlantationArea: requiredPlantationArea.toFixed(2), // Rounded for readability
+      city,
+      aqi: data.AQI,
     });
 
   } catch (error) {
-    console.error('Error fetching data:', error.response ? error.response.data : error.message);
+    console.error('Error fetching data:', error);
     return res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+
 
 const PORT = 5000;
 app.listen(PORT, () => {
