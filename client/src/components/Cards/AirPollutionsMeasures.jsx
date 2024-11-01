@@ -5,6 +5,7 @@ import Vehicle from './vehicle.png';
 import Greenspace from './greenspaces.png';
 import Awareness from './awareness.png';
 import Industry from './industry.png';
+import Renewable from './renewable.png';
 
 // Sample data for measures
 const measuresData = [
@@ -21,7 +22,7 @@ const measuresData = [
   {
     title: 'Promote Renewable Energy',
     description: 'Switching from fossil fuels to renewable energy sources like solar, wind, and hydroelectric power reduces greenhouse gas emissions and lessens air pollution. Renewable energy supports cleaner air, conserves natural resources, and helps build sustainable communities. Implementing renewable solutions at local and national levels ensures a healthier environment and energy independence.',
-    icon: Industry,
+    icon: Renewable,
   },
   {
     title: 'Improve Waste Management',
