@@ -6,7 +6,7 @@ import Greenspace from './greenspaces.png';
 import Awareness from './awareness.png';
 import Industry from './industry.png';
 import Renewable from './renewable.png';
-
+import Governance from './governance.png'
 // Sample data for measures
 const measuresData = [
   {
@@ -33,6 +33,11 @@ const measuresData = [
     title: 'Encourage Green Spaces',
     description: 'Creating parks, green belts, and urban forests enhances air quality by providing oxygen and cooling the urban environment. Green spaces promote biodiversity and offer recreation and relaxation for communities. Urban planning that includes green zones helps mitigate the heat island effect, making cities more resilient to climate change.',
     icon: Greenspace,
+  },
+  {
+    title: 'Governance Rules',
+    description: 'Stricter regulations on industries with high carbon emissions. Financial penalties for non-compliance with emission standards.',
+    icon: Governance, // Assuming you have an icon for governance
   },
   {
     title: 'Raise Awareness',

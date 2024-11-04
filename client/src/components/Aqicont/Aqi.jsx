@@ -37,17 +37,25 @@ function AqiDisplay() {
         };
         response = { data: calculateCustomData(customParams) };
       }
-
+    
       const cityDetails = response.data;
       const requiredArea = cityDetails.requiredArea;
+    
       if (requiredArea > cityDetails.area / 2) {
         setWarning(
           <>
-            Required area is more than half of the city's area. To control air pollution we suggest some measures, visit our{' '} <br />
+            Required area is more than half of the city's area. To control air pollution we suggest some measures, visit our{' '}
             <Link to="/knowledge" className="cursor-pointer text-green-600 underline">Knowledge page</Link>.
           </>
         );
         setCityData({ ...cityDetails, requiredArea: null });
+      } else if (requiredArea < 0) {
+        setWarning(
+          <>
+            The current AQI is already lower than the target AQI.
+          </>
+        );
+        setCityData({ ...cityDetails, requiredArea: "NA" });
       } else {
         setCityData(cityDetails);
       }
@@ -57,7 +65,7 @@ function AqiDisplay() {
       setCityData(null);
     } finally {
       setLoading(false);
-    }
+    }    
   };
 
   const calculateCustomData = ({ curAQI, targetAQI, population, area }) => {
@@ -67,7 +75,7 @@ function AqiDisplay() {
     const totalCarbonAbsorptionNeeded = (curAQI - targetAQI) * population * 0.001;
     const treesNeeded = Math.ceil(totalCarbonAbsorptionNeeded / avgCarbonAbsorption);
     const requiredArea = treesNeeded / treesPerKm2;
-
+    
     return {
       city: 'Custom Input',
       curAQI,
@@ -198,7 +206,7 @@ function AqiDisplay() {
 
       {cityData && (
         <div className="mt-6 bg-white shadow-lg rounded-lg p-6 w-full max-w-md">
-          <h2 className="text-2xl font-bold text-green-600">{cityData.city}</h2>
+          <h2 className="text-2xl font-bold text-green-600">{cityData.city.toUpperCase()}</h2>
           <p className="text-lg">Current AQI: {cityData.curAQI}</p>
           <p className="text-lg">Target AQI: {cityData.targetAQI}</p>
           <p className="text-lg">Population: {cityData.population}</p>

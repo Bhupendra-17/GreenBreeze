@@ -1,7 +1,8 @@
-
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const fs = require('fs');
+const csv = require('csv-parser');
 const app = express();
 
 // Enable CORS for React frontend
@@ -9,16 +10,40 @@ app.use(cors());
 
 // API keys
 const aqiApiKey = '228b29504d3434826beaab2ce4f305430446d9b1';
-const geoDbApiKey = '54f36ecef8msh5e1ba8c380116a1p1b24b0jsn69082316784b';
+
+// Load the CSV data into an object for quick lookups
+const cityDataMap = new Map();
+
+fs.createReadStream('./data.csv')
+  .pipe(csv())
+  .on('data', (row) => {
+    // Assuming the CSV has columns 'City', 'Population', 'Area'
+    const cityName = row.City.toLowerCase();
+    cityDataMap.set(cityName, {
+      population: parseInt(row.Population, 10),
+      area: parseFloat(row.Area),
+    });
+  })
+  .on('end', () => {
+    console.log('CSV file successfully processed and data loaded.');
+  });
 
 // Fetch AQI and city data (population, area)
 app.get('/api/citydata', async (req, res) => {
-  const city = req.query.city || 'Raipur';
-  const targetAQI = parseInt(req.query.targetAQI) || 50; // Default target AQI
+  const city = req.query.city ? req.query.city.toLowerCase() : 'raipur';
+  const targetAQI = parseInt(req.query.targetAQI, 10) || 50; // Default target AQI
 
   if (!city) {
     return res.status(400).json({ error: 'City is required' });
   }
+
+  // Get population and area from CSV data
+  const cityData = cityDataMap.get(city);
+  if (!cityData) {
+    return res.status(404).json({ error: 'City not found in local data' });
+  }
+
+  const { population, area } = cityData;
 
   try {
     // Get AQI data
@@ -30,35 +55,25 @@ app.get('/api/citydata', async (req, res) => {
     }
 
     const curAQI = aqiData.data.aqi;
-
-    // Fetch population and area data using GeoDB Cities API
-    const geoDbResponse = await axios.get(
-      `https://wft-geo-db.p.rapidapi.com/v1/geo/cities?namePrefix=${city}&limit=1`,
-      {
-        headers: {
-          'x-rapidapi-key': geoDbApiKey,
-          'x-rapidapi-host': 'wft-geo-db.p.rapidapi.com',
-        },
-      }
-    );
-
-    if (!geoDbResponse.data || geoDbResponse.data.data.length === 0) {
-      return res.status(404).json({ error: 'City not found for population and area data' });
-    }
-
-    const cityData = geoDbResponse.data.data[0];
-    const population = cityData.population || 500000; // Default if not found
-    const area = cityData.area ||450; // Default area in km²
-
+    const message= "The current AQI is less than target AQI."
     // Calculate the number of trees required
     const avgCarbonAbsorption = 10; // kg/tree
     const treesPerKm2 = 100; // trees/km²
     const totalCarbonAbsorptionNeeded = (curAQI - targetAQI) * population * 0.001; // kg
     const treesNeeded = Math.ceil(totalCarbonAbsorptionNeeded / avgCarbonAbsorption);
     const requiredArea = treesNeeded / treesPerKm2; // in km²
-
+    if (requiredArea < 0) {
+      return res.json({
+        city,
+        curAQI,
+        targetAQI,
+        population,
+        area,
+        requiredArea : 0
+      })
+    }
     return res.json({
-      city: cityData.name,
+      city,
       curAQI,
       targetAQI,
       population,
