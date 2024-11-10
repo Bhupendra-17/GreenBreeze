@@ -45,6 +45,7 @@ The architecture is divided into the **Frontend**, **Backend**, and **Data Sourc
 1. Clone the repository:
    ```bash
    git clone https://github.com/Bhupendra-17/GreenBreeze.git
+   cd GreenBreeze
 2. Install Dependencies:
     ```bash 
     npm install
