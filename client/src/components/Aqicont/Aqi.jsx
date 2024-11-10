@@ -27,7 +27,7 @@ function AqiDisplay() {
           setLoading(false);
           return;
         }
-        response = await axios.get(`http://localhost:5000/api/citydata?city=${cityInput}&targetAQI=${targetAqiInput}`);
+        response = await axios.get(`http://139.84.151.214:5000/api/citydata?city=${cityInput}&targetAQI=${targetAqiInput}`);
       } else {
         const customParams = {
           curAQI: curAqiInput,
