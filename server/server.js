@@ -6,7 +6,7 @@ const csv = require('csv-parser');
 const app = express();
 
 // Enable CORS for React frontend
-app.use(cors({ origin: 'https://your-vercel-app-url.com' }));
+app.use(cors({ origin: 'https://greenbreeze.vercel.app' }));
 
 // API keys
 const aqiApiKey = '228b29504d3434826beaab2ce4f305430446d9b1';
