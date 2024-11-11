@@ -27,7 +27,7 @@ function AqiDisplay() {
           setLoading(false);
           return;
         }
-        response = await axios.get(`https://greenbreeze.onrender.com//api/citydata?city=${cityInput}&targetAQI=${targetAqiInput}`);
+        response = await axios.get(`https://greenbreeze.onrender.com/api/citydata?city=${cityInput}&targetAQI=${targetAqiInput}`);
       } else {
         const customParams = {
           curAQI: curAqiInput,
